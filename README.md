@@ -10,7 +10,7 @@ I'm currently writing this program in Python 3 but one of my objective would be 
 TO-DO
 
 ### Prerequisites
-TO-DO
+python packages : pip3 install pillow termcolor progress
 
 ### Installation
 TO-DO
