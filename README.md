@@ -6,20 +6,27 @@ Then I documented myself to understand how it really works and how I could make 
 Nothing else but my own hands !
 I'm currently writing this program in Python 3 but one of my objective would be to translate this one in C to gain in performance.
 
-## Getting started
-TO-DO
-
-### Prerequisites
-python packages : pip3 install pillow termcolor progress
-
 ### Installation
-TO-DO
+$ git clone https://github.com/MaxBresil/LStegB.git
+$ cd LStegB
+$ pip3 install -r requirements
+$ python3 LStegB.py -h
 
 ## Usage
-TO-DO
+To brute-force with all possible LSB methods **(-a/--all)**:
+python3 LStegB.py -f FILE -a
+
+To brute-force with the basic LSB method **(-b/--basic)**:
+python3 LStegB.py -f FILE -b
+
+To brute-force with the PIT method **(-i/--pit)**:
+python3 LStegB.py -f FILE -i
+
+To brute-force with the PVD method **(-v/--pvd)**:
+python3 LStegB.py -f FILE -v
 
 ## Contributing
-TO-DO
+If you want to contribute in this tool, just submit a pull request ! Every pieces of advice is welcome :D
 
 ## Versioning
 I'm using [SourceTree](https://www.sourcetreeapp.com) for versioning.
