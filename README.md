@@ -1,4 +1,4 @@
-# LStegB - LSB Image Steganography
+<h1 align="center">LStegB - LSB Image Steganography</h1>
 The first time I discovered about LSB steganography implemented in image I thought it was a really cool way to hide informations in image without it being noticeable.
 Then I documented myself to understand how it really works and how I could make my life easier when it come to this kind of challenge in CTF so I developped a brute-forcer !
 
@@ -36,7 +36,12 @@ python3 LStegB.py -f FILE -v
 ```
 
 ## Contributing
-If you want to contribute in this tool, just submit a pull request ! Every pieces of advice is welcome :D
+Ways to contribute
+- Suggest a feature
+- Report a bug
+- Fix something and open a pull request
+- Help me document the code
+- Spread the word
 
 ## Versioning
 I'm using [SourceTree](https://www.sourcetreeapp.com) for versioning.
