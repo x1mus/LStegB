@@ -13,7 +13,7 @@ except ModuleNotFoundError:
 
 
 def get_arguments(parser):
-	""" Getting all arguments passed to the program
+	"""Getting all arguments passed to the program
 	"""
 	parser.add_argument("--file", "-f", type=str, required=True, help="Image to brute-force")
 	parser.add_argument("--all", "-a", action="store_true", help="All LSB techniques")
@@ -29,7 +29,7 @@ def check_arguments(parser, args):
 	Then we need to be sure that the user uses valid arguments
 	"""
 	try:
-		if imghdr.what(args.file) != "jpeg" and imghdr.what(args.file) != "png":
+		if imghdr.what(args.file) != "jpeg" and imghdr.what(args.file) != "png" and imghdr.what(args.file) != "bmp":
 			parser.error("The file is not a valid image")
 	except FileNotFoundError:
 		parser.error("File not found")
@@ -93,6 +93,19 @@ def binary_to_ascii(binary_string):
 	return buff
 
 
+def is_prime(num):
+	"""Check if the number in paramter is a prime number, return True if it's the case, return False otherwise
+	"""
+	return all(num % i for i in range(2, num))
+
+
+def parity_bit(num):
+	binary = bin(num).replace("0b", "")
+	count = str(binary).count('1')
+
+	return True if count % 2 == 0 else False
+
+
 def basic(im, width, height, bit, channel, height_step, width_step, reversed_height, reversed_width):
 	"""We browse the image in every directions (bottom -> top / right -> left / ...) and for each directions, we write
 	the results ascii strings in the basic.txt file.
@@ -150,6 +163,203 @@ def basic_bf(im, width, height, bits_quantity, channels, steps):
 	bar.finish()
 
 
+def get_secret_length(im, width, height, reversed_height, reversed_width, vertical):
+	"""Since PIT is based on an indicator channel determined by the size of the secret, we need to find it.
+	The secret length is always in the first row of the image (in the first 8 bytes (so 3 pixels - 1 byte))
+	"""
+	pixels = im.load()
+	secret_length_binary = ''
+
+	i = 0
+	while i < 3:
+		if vertical:
+			if reversed_width and reversed_height:
+				r, g, b = pixels[width - 1, height - i - 1]
+			elif reversed_width:
+				r, g, b = pixels[width - 1, i]
+			elif reversed_height:
+				r, g, b = pixels[0, height - i - 1]
+			else:
+				r, g, b = pixels[0, i]
+		else:
+			if reversed_width and reversed_height:
+				r, g, b = pixels[width - i - 1, height - 1]
+			elif reversed_width:
+				r, g, b = pixels[width - i - 1, 0]
+			elif reversed_height:
+				r, g, b = pixels[i, height - 1]
+			else:
+				r, g, b = pixels[i, 0]
+
+		r_binary = '{0:08b}'.format(r)
+		g_binary = '{0:08b}'.format(g)
+		b_binary = '{0:08b}'.format(b)
+
+		secret_length_binary += r_binary + g_binary + b_binary
+
+		i += 1
+
+	secret_length = secret_length_binary[:-8]
+	return int(secret_length, 2) // 8
+
+
+def find_pattern(secret_length):
+	"""To find the pattern (so to find the indicator, the first channel & the second channel) we need to follow some
+	rules based on the length of the secret :
+		╔════════════╦══════╦═══════╦═══════╗
+		║ Parity bit ║ Even ║ Prime ║ Other ║
+		╠════════════╬══════╬═══════╬═══════╣
+		║ Even       ║ RBG  ║ BGR   ║ GBR   ║
+		╠════════════╬══════╬═══════╬═══════╣
+		║ Odd        ║ RGB  ║ BRG   ║ GRB   ║
+		╚════════════╩══════╩═══════╩═══════╝
+		For example, if the length of the message is 17 :
+			- 17 isnt even, but is a prime number --> Indicator == B
+			- 17 in binary is 10001 so the parity is even --> first channel is G & second channel is R
+	"""
+	if secret_length % 2 == 0:
+		pattern = "R"
+		if parity_bit(secret_length):
+			pattern += "BG"
+		else:
+			pattern += "GB"
+	elif is_prime(secret_length):
+		pattern = "B"
+		if parity_bit(secret_length):
+			pattern += "GR"
+		else:
+			pattern += "RG"
+	else:
+		pattern = "G"
+		if parity_bit(secret_length):
+			pattern += "BR"
+		else:
+			pattern += "RB"
+
+	return pattern
+
+
+def extract_bits(indicator, channel1, channel2):
+	if indicator[-2:] == "01":
+		return str(channel2[-2:])
+	elif indicator[-2:] == "10":
+		return str(channel1[-2:])
+	elif indicator[-2:] == "11":
+		return str(channel1[-2:] + channel2[-2:])
+	else:
+		return ""
+
+
+def pit(im, width, height, height_step, width_step, reversed_height, reversed_width):
+	"""The first part of this function browse the image horizontally starting on :
+		- top left
+		- top right
+		- bottom left
+		- bottom right
+	For each direction, we get the secret_length to discover the pattern. Finally, we extracts all necessary bits and
+	then decode them to ASCII
+	"""
+	secret_length = get_secret_length(im, width, height, reversed_height, reversed_width, False)
+	pattern = find_pattern(secret_length)
+
+	f = open("pit.txt", "a", encoding="utf-8")
+
+	if not reversed_height:
+		range_height_pixel = range(1, height, height_step)
+	else:
+		range_height_pixel = reversed(range(0, height-1, height_step))
+
+	if not reversed_width:
+		range_width_pixel = range(0, width, width_step)
+	else:
+		range_width_pixel = reversed(range(0, width, width_step))
+
+	pixels = im.load()
+	secret = ''
+	for height_pixel in range_height_pixel:
+		for width_pixel in range_width_pixel:
+			r, g, b = pixels[width_pixel, height_pixel]
+
+			r_binary = '{0:08b}'.format(r)
+			g_binary = '{0:08b}'.format(g)
+			b_binary = '{0:08b}'.format(b)
+
+			if pattern == "RGB":
+				secret += extract_bits(r_binary, g_binary, b_binary)
+			elif pattern == "RBG":
+				secret += extract_bits(r_binary, b_binary, g_binary)
+			elif pattern == "BGR":
+				secret += extract_bits(b_binary, g_binary, r_binary)
+			elif pattern == "BRG":
+				secret += extract_bits(b_binary, r_binary, g_binary)
+			elif pattern == "GBR":
+				secret += extract_bits(g_binary, b_binary, r_binary)
+			elif pattern == "GRB":
+				secret += extract_bits(g_binary, r_binary, b_binary)
+
+	f.write(binary_to_ascii(secret))
+	f.close()
+
+	"""This second part focus on browsing the image vertically and doing the same operations than before
+	"""
+	secret_length = get_secret_length(im, width, height, reversed_height, reversed_width, True)
+	pattern = find_pattern(secret_length)
+
+	f = open("pit.txt", "a", encoding="utf-8")
+
+	if not reversed_height:
+		range_height_pixel = range(0, height, height_step)
+	else:
+		range_height_pixel = reversed(range(0, height, height_step))
+
+	if not reversed_width:
+		range_width_pixel = range(1, width, width_step)
+	else:
+		range_width_pixel = reversed(range(0, width-1, width_step))
+
+	pixels = im.load()
+	secret = ''
+	for width_pixel in range_width_pixel:
+		for height_pixel in range_height_pixel:
+			r, g, b = pixels[width_pixel, height_pixel]
+
+			r_binary = '{0:08b}'.format(r)
+			g_binary = '{0:08b}'.format(g)
+			b_binary = '{0:08b}'.format(b)
+
+			if pattern == "RGB":
+				secret += extract_bits(r_binary, g_binary, b_binary)
+			elif pattern == "RBG":
+				secret += extract_bits(r_binary, b_binary, g_binary)
+			elif pattern == "BGR":
+				secret += extract_bits(b_binary, g_binary, r_binary)
+			elif pattern == "BRG":
+				secret += extract_bits(b_binary, r_binary, g_binary)
+			elif pattern == "GBR":
+				secret += extract_bits(g_binary, b_binary, r_binary)
+			elif pattern == "GRB":
+				secret += extract_bits(g_binary, r_binary, b_binary)
+
+	f.write(binary_to_ascii(secret))
+	f.close()
+
+
+def pit_bf(im, width, height, steps):
+	"""Here we're not bruteforcing all the possibilities in the bits quantity or the channels since it is provided
+	by the technique. The only thing we can brute force would be the steps to browse the image and the directions we're
+	browsing it aswell
+	"""
+	bar = Bar('Processing', max=81, suffix='%(percent)d%%')
+	for height_step in steps:
+		for width_step in steps:
+			pit(im, width, height, height_step, width_step, False, False)
+			pit(im, width, height, height_step, width_step, False, True)
+			pit(im, width, height, height_step, width_step, True, False)
+			pit(im, width, height, height_step, width_step, True, True)
+			bar.next()
+	bar.finish()
+
+
 def main():
 	"""First of all, we do all the requirements before starting the program. In includes:
 		- Checking the file
@@ -162,6 +372,14 @@ def main():
 	"""Since all the verifications succeeded if we reach this point, we're starting the process according to the
 	arguments and defining the variable that will not change throughout the whole program
 	"""
+	print("""
+██╗     ███████╗████████╗███████╗ ██████╗ ██████╗
+██║     ██╔════╝╚══██╔══╝██╔════╝██╔════╝ ██╔══██╗
+██║     ███████╗   ██║   █████╗  ██║  ███╗██████╔╝
+██║     ╚════██║   ██║   ██╔══╝  ██║   ██║██╔══██╗
+███████╗███████║   ██║   ███████╗╚██████╔╝██████╔╝
+╚══════╝╚══════╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═════╝ 
+""")
 	channels = ["RGB", "RBG", "GRB", "GBR", "BGR", "BRG", "RG", "RB", "GR", "GB", "BR", "BG", "R", "G", "B"]
 	bits_quantity = range(1, 4)
 	steps = range(1, 10)
@@ -176,7 +394,7 @@ def main():
 		basic_bf(im, width, height, bits_quantity, channels, steps)
 		print(colored("[-]", "red") + " Ending basic process...")
 		print(colored("[+]", "green") + " Starting pit process...")
-		# pit(im, width, height)
+		pit_bf(im, width, height, steps)
 		print(colored("[-]", "red") + " Ending pit process...")
 		print(colored("[+]", "green") + " Starting pvd process...")
 		# pvd(im, width, height)
@@ -188,7 +406,7 @@ def main():
 			print(colored("[-]", "red") + " Ending basic process...")
 		if args.pit:
 			print(colored("[+]", "green") + " Starting pit process...")
-			# pit(im, width, height)
+			pit_bf(im, width, height, steps)
 			print(colored("[-]", "red") + " Ending pit process...")
 		if args.pvd:
 			print(colored("[+]", "green") + " Starting pvd process...")

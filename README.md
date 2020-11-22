@@ -6,11 +6,11 @@ Then I documented myself to understand how it really works and how I could make 
 Nothing else but my own hands !
 I'm currently writing this program in Python 3 but one of my objective would be to translate this one in C to gain in performance.
 
-### Installation
+## Installation
 ```bash
 $ git clone https://github.com/MaxBresil/LStegB.git
 $ cd LStegB
-$ pip3 install -r requirements
+$ pip3 install -r requirements.txt
 $ python3 LStegB.py -h
 ```
 
