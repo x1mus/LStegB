@@ -2,6 +2,10 @@
 The first time I discovered about LSB steganography implemented in image I thought it was a really cool way to hide informations in image without it being noticeable.
 Then I documented myself to understand how it really works and how I could make my life easier when it come to this kind of challenge in CTF so I developped a brute-forcer !
 
+## Disclaimer
+This program can take quite some time to complete since it is written in Python which is a pretty slow language. However, keep in mind that you can of course check the output while the tool is running and when you have your result just terminate it.
+Another choice could be to just let it run and focus on other challenges !
+
 ## Built with
 Nothing else but my own hands !
 I'm currently writing this program in Python 3 but one of my objective would be to translate this one in C to gain in performance.
@@ -28,11 +32,6 @@ python3 LStegB.py -f FILE -b
 To brute-force with the PIT method **(-i/--pit)**:
 ```bash
 python3 LStegB.py -f FILE -i
-```
-
-To brute-force with the PVD method **(-v/--pvd)**:
-```bash
-python3 LStegB.py -f FILE -v
 ```
 
 ## Contributing
