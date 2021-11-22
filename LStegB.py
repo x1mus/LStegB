@@ -48,7 +48,7 @@ def rgb_to_binary(bits_quantity, channel, r, g, b, a=None):
 	b_binary = '{0:08b}'.format(b)
 
 	a_binary = None
-	if a:
+	if a >= 0:
 		a_binary = '{0:08b}'.format(a)
 
 	if channel == "RGBA":
