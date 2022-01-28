@@ -286,21 +286,11 @@ class LStegB:
 			exit()
 
 	def run(self):
-		print("""
-██╗     ███████╗████████╗███████╗ ██████╗ ██████╗
-██║     ██╔════╝╚══██╔══╝██╔════╝██╔════╝ ██╔══██╗
-██║     ███████╗   ██║   █████╗  ██║  ███╗██████╔╝
-██║     ╚════██║   ██║   ██╔══╝  ██║   ██║██╔══██╗
-███████╗███████║   ██║   ███████╗╚██████╔╝██████╔╝
-╚══════╝╚══════╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═════╝ 
-""")
-		
 		self.im = Image.open(self.args.file)
 
 		if self.file_type == "png":
 			self.find_png_type()
 
-		print(colored("This program can take quite some time to complete.", "red", attrs=['bold']))
 		print(f"{colored('[+]', 'green')} Starting LStegB program...")
 
 		if self.args.all:
