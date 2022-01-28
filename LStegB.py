@@ -4,194 +4,14 @@ try:
 	import os
 	import imghdr
 	import argparse
-	from progress.bar import Bar
 	from termcolor import colored
 	from PIL import Image, UnidentifiedImageError
 except ModuleNotFoundError:
 	print("\033[1;31m" + "Please install the requirements")
 	exit()
 
-
-def get_arguments(parser):
-	"""Getting all arguments passed to the program
-	"""
-	parser.add_argument("--file", "-f", type=str, required=True, help="Image to brute-force")
-	parser.add_argument("--all", "-a", action="store_true", help="All LSB techniques")
-	parser.add_argument("--basic", "-b", action="store_true", help="Basic LSB")
-	parser.add_argument("--pit", "-i", action="store_true", help="Pixel indicator technique")
-	args = parser.parse_args()
-	return args
-
-
-def check_arguments(parser, args):
-	"""Making sure the file passed is a valid image & exist.
-	Then we need to be sure that the user uses valid arguments
-	"""
-	try:
-		if imghdr.what(args.file) != "jpeg" and imghdr.what(args.file) != "png" and imghdr.what(args.file) != "bmp":
-			parser.error("The file is not a valid image")
-	except FileNotFoundError:
-		parser.error("File not found")
-
-	if not args.all and not args.basic and not args.pit:
-		parser.error("Please specify at least one technique (-b / -i)")
-	elif args.all and (args.basic or args.pit):
-		parser.error("If -a is specified, you can't specify -b or -i")
-
-
-def rgb_to_binary(bits_quantity, channel, r, g, b, a=None):
-	"""Takes the quantity of bits, to keep (from 1 to 3) in each channel in parameter.
-	For example: We can take the 2 last bits of the R & B channels only
-	"""
-	r_binary = '{0:08b}'.format(r)
-	g_binary = '{0:08b}'.format(g)
-	b_binary = '{0:08b}'.format(b)
-
-	a_binary = None
-	if a >= 0:
-		a_binary = '{0:08b}'.format(a)
-
-	if channel == "RGBA":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RGAB":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RAGB":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RABG":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RBGA":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RBAG":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "BGRA":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BGAR":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BAGR":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BARG":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "BRGA":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BRAG":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GRBA":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GRAB":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GARB":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GABR":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "GBRA":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GBAR":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AGBR":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AGRB":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ARGB":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ARBG":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "ABGR":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "ABRG":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RGB":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RBG":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GRB":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GBR":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BGR":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BRG":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "AGB":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ABG":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GAB":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GBA":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BGA":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BAG":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RAB":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RBA":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "ARB":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ABR":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BAR":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BRA":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RGA":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RAG":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GRA":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GAR":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AGR":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "ARG":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RG":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RA":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RB":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GA":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GB":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GR":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BA":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BG":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "BR":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AR":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AG":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "AB":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "R":
-		return r_binary[-bits_quantity:]
-	elif channel == "B":
-		return b_binary[-bits_quantity:]
-	elif channel == "G":
-		return g_binary[-bits_quantity:]
-	elif channel == "A":
-		return a_binary[-bits_quantity:]
-
-
-def binary_to_ascii(binary_string):
-	"""Basic function that takes a binary string in parameters. e.g: '00111010101010' and transform it to an ascii
-	string.
-	"""
-	binary_bytes = [binary_string[i:i + 8] for i in range(0, len(binary_string), 8)]
-
-	buff = ''
-	for character in binary_bytes:
-		buff += chr(int(character, 2))
-
-	return buff
+from basic import Basic
+# from pit import Pit
 
 
 def is_prime(num):
@@ -205,71 +25,6 @@ def parity_bit(num):
 	count = str(binary).count('1')
 
 	return True if count % 2 == 0 else False
-
-
-def basic(im, width, height, bit, channel, height_step, width_step, reversed_height, reversed_width):
-	"""We browse the image in every directions (bottom -> top / right -> left / ...) and for each directions, we write
-	the results ascii strings in the basic.txt file.
-	"""
-	range_height_pixel = range(0, height, height_step)
-	range_width_pixel = range(0, width, width_step)
-
-	if reversed_width:
-		range_width_pixel = reversed(range_width_pixel)
-	if reversed_height:
-		range_height_pixel = reversed(range_height_pixel)
-
-	f = open("basic.txt", "a", encoding="utf-8")
-
-	# Foreach height, we browse the whole width
-	pixels = im.load()
-	secret = ''
-	for height_pixel in range_height_pixel:
-		for width_pixel in range_width_pixel:
-			try:
-				r, g, b = pixels[width_pixel, height_pixel]
-				secret += rgb_to_binary(bit, channel, r, g, b)
-			except ValueError:
-				r, g, b, a = pixels[width_pixel, height_pixel]
-				secret += rgb_to_binary(bit, channel, r, g, b, a)
-
-	f.write(binary_to_ascii(secret))
-
-	# Foreach width, we browse the whole height
-	pixels = im.load()
-	secret = ''
-	for width_pixel in range_width_pixel:
-		for height_pixel in range_height_pixel:
-			try:
-				r, g, b = pixels[width_pixel, height_pixel]
-				secret += rgb_to_binary(bit, channel, r, g, b)
-			except ValueError:
-				r, g, b, a = pixels[width_pixel, height_pixel]
-				secret += rgb_to_binary(bit, channel, r, g, b, a)
-
-	f.write(binary_to_ascii(secret))
-
-	f.close()
-
-
-def basic_bf(im, width, height, bits_quantity, channels, steps):
-	"""In this order :
-		First, we're going trough all 3 possibilities of bits (1 to 3)
-		Second, we're going through every combinations possible of channels (RGB / RBG / GRB / ...)
-		Third & fourth, setting up step amount to maximum 10 (vertically and horizontally)
-		Finally, we call the basic process to browse the image in different directions
-	"""
-	bar = Bar('Processing', max=3645, suffix='%(percent)d%%')
-	for bit in bits_quantity:
-		for channel in channels:
-			for height_step in steps:
-				for width_step in steps:
-					basic(im, width, height, bit, channel, height_step, width_step, False, False)
-					basic(im, width, height, bit, channel, height_step, width_step, False, True)
-					basic(im, width, height, bit, channel, height_step, width_step, True, False)
-					basic(im, width, height, bit, channel, height_step, width_step, True, True)
-					bar.next()
-	bar.finish()
 
 
 def get_secret_length(im, width, height, reversed_height, reversed_width, vertical):
@@ -469,70 +224,113 @@ def pit_bf(im, width, height, steps):
 	bar.finish()
 
 
-def main():
-	"""First of all, we do all the requirements before starting the program. It includes:
-		- Checking the file
-		- Verifying all the arguments that the user passes to the program
-	"""
-	parser = argparse.ArgumentParser()
-	args = get_arguments(parser)
-	check_arguments(parser, args)
-
-	"""Since all the verifications succeeded if we reach this point, we're starting the process according to the
-	arguments and defining the variable that will not change throughout the whole program
-	"""
-	print("""
-██╗     ███████╗████████╗███████╗ ██████╗ ██████╗
-██║     ██╔════╝╚══██╔══╝██╔════╝██╔════╝ ██╔══██╗
-██║     ███████╗   ██║   █████╗  ██║  ███╗██████╔╝
-██║     ╚════██║   ██║   ██╔══╝  ██║   ██║██╔══██╗
-███████╗███████║   ██║   ███████╗╚██████╔╝██████╔╝
-╚══════╝╚══════╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═════╝ 
-""")
-	im = Image.open(args.file)
-	width, height = im.size
-
-	if im.mode == "RGBA":
-		channels = [
+class LStegB:
+	def __init__(self):
+		""" Getting the arguments
+		"""
+		self.parser = argparse.ArgumentParser()
+		self.parser.add_argument("--file", "-f", type=str, required=True, help="Image to brute-force")
+		self.parser.add_argument("--all", "-a", action="store_true", help="All LSB techniques")
+		self.parser.add_argument("--basic", "-b", action="store_true", help="Basic LSB")
+		self.parser.add_argument("--pit", "-i", action="store_true", help="Pixel indicator technique")
+		self.args = self.parser.parse_args()
+		self.rgba_combination = [
 			"RGBA", "RGAB", "RAGB", "RABG", "RBGA", "RBAG", "BGRA", "BGAR", "BAGR", "BARG", "BRGA", "BRAG", "GRBA",
 			"GRAB", "GARB", "GABR", "GBRA", "GBAR", "AGBR", "AGRB", "ARGB", "ARBG", "ABGR", "ABRG", "RGB", "RBG", "GRB",
 			"GBR", "BGR", "BRG", "AGB", "ABG", "GAB", "GBA", "BGA", "BAG", "RAB", "RBA", "ARB", "ABR", "BAR", "BRA",
 			"RGA", "RAG", "GRA", "GAR", "AGR", "ARG", "RG", "RA", "RB", "GA", "GB", "GR", "BA", "BG", "BR", "AR", "AG",
 			"AB", "R", "B", "G", "A"
 		]
-	else:
-		channels = ["RGB", "RBG", "GRB", "GBR", "BGR", "BRG", "RG", "RB", "GR", "GB", "BR", "BG", "R", "G", "B"]
+		self.rgb_combination = ["RGB", "RBG", "GRB", "GBR", "BGR", "BRG", "RG", "RB", "GR", "GB", "BR", "BG", "R", "G", "B"]
+		self.la_combination = ["LA", "AL", "L", "A"]
+		self.l_combination = ["L"]
+		self.bits_quantity = range(1, 2)
+		self.steps = range(1, 2)
 
-	bits_quantity = range(1, 4)
-	steps = range(1, 10)
+	def check_arguments(self):
+		""" Checking if the arguments are valid
+		"""
+		self.file_type = imghdr.what(self.args.file)
+		try:
+			if self.file_type != "png":
+				self.parser.error("The file type specified is not supported")
+		except FileNotFoundError:
+			self.parser.error("File not found")
 
-	print(colored("This program can take quite some time to complete.", "red", attrs=['bold']))
-	print(colored("[+]", "green") + " Starting LStegB program...")
+		if not self.args.all and not self.args.basic and not self.args.pit:
+			self.parser.error("Please specify at least one technique (-b / -i)")
+		elif self.args.all and (self.args.basic or self.args.pit):
+			self.parser.error("If -a is specified, you can't specify -b or -i")
 
-	if args.all:
-		print(colored("[+]", "green") + " Starting basic process...")
-		basic_bf(im, width, height, bits_quantity, channels, steps)
-		print(colored("[-]", "red") + " Ending basic process...")
-		print(colored("[+]", "green") + " Starting pit process...")
-		if im.mode == "RGBA":
-			print(colored("PIT does not support RGBA files", "red"))
+	def find_png_type(self):
+		""" Getting the current PNG mode :
+			- "L" --> Grayscale
+			- "LA" --> Grayscale with alpha
+			- "RGB" --> Truecolor
+			- "RGBA" --> Truecolor with alpha
+			- Other (like indexed-color are not supported right now)
+		"""
+		mode = self.im.mode
+		if mode in ["L", "LA", "RGB", "RGBA"]:
+			print(f"{colored('[+]', 'green')} PNG type '{mode}' detected")
+			if mode == "L":
+				self.channels = self.l_combination
+			elif mode == "LA":
+				self.channels = self.la_combination
+			elif mode == "RGB":
+				self.channels = self.rgb_combination
+			elif mode == "RGBA":
+				self.channels = self.rgba_combination
 		else:
-			pit_bf(im, width, height, steps)
-		print(colored("[-]", "red") + " Ending pit process...")
-	else:
-		if args.basic:
-			print(colored("[+]", "green") + " Starting basic process...")
-			basic_bf(im, width, height, bits_quantity, channels, steps)
-			print(colored("[-]", "red") + " Ending basic process...")
-		if args.pit:
-			print(colored("[+]", "green") + " Starting pit process...")
+			print(f"{colored('[-]', 'red')} PNG type '{mode}' is not supported")
+			exit()
+
+	def run(self):
+		self.im = Image.open(self.args.file)
+
+		if self.file_type == "png":
+			self.find_png_type()
+
+		print(f"{colored('[+]', 'green')} Starting LStegB program...")
+
+		if self.args.all:
+			print(f"{colored('[+]', 'green')} Starting basic process...")
+			basic = Basic(self.im, self.bits_quantity, self.channels, self.steps)
+			basic.bruteforce()
+			print(f"{colored('[-]', 'red')} Ending basic process...")
+			"""
+			print(f"{colored('[+]', 'green')} Starting pit process...")
 			if im.mode == "RGBA":
 				print(colored("PIT does not support RGBA files", "red"))
 			else:
 				pit_bf(im, width, height, steps)
-			print(colored("[-]", "red") + " Ending pit process...")
+			print(f"{colored('[-]', 'red')} Ending pit process...")"""
+		else:
+			if self.args.basic:
+				print(f"{colored('[+]', 'green')} Starting basic process...")
+				basic = Basic(self.im, self.bits_quantity, self.channels, self.steps)
+				basic.bruteforce()
+				print(f"{colored('[-]', 'red')} Ending basic process...")
+			"""if self.args.pit:
+				print(f"{colored('[+]', 'green')} Starting pit process...")
+				if im.mode == "RGBA":
+					print(colored("PIT does not support RGBA files", "red"))
+				else:
+					pit_bf(im, width, height, steps)
+				print(f"{colored('[-]', 'red')} Ending pit process...")"""
 
-	print(colored("[-]", "red") + " Ending LStegB program...")
+		print(f"{colored('[-]', 'red')} Ending LStegB program...")
+
+
+def main():
+	# Creating the parser
+	lstegb = LStegB()
+
+	# Checking the given arguments
+	lstegb.check_arguments()
+
+	# Launching the main process if the checks are successful
+	lstegb.run()
 
 
 if __name__ == "__main__":
