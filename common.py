@@ -1,3 +1,14 @@
+def is_prime(num):
+	"""Check if the number in paramter is a prime number, return True if it's the case, return False otherwise
+	"""
+	return all(num % i for i in range(2, num))
+
+def parity_bit(num):
+	binary = bin(num).replace("0b", "")
+	count = str(binary).count('1')
+
+	return True if count % 2 == 0 else False
+
 def la_to_binary(bits_quantity, channel, l, a=None):
 	l_binary = '{0:08b}'.format(l)
 
