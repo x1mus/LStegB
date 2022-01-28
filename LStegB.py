@@ -11,161 +11,7 @@ except ModuleNotFoundError:
 	exit()
 
 from basic import Basic
-
-
-def rgb_to_binary(bits_quantity, channel, r, g, b, a=None):
-	"""Takes the quantity of bits, to keep (from 1 to 3) in each channel in parameter.
-	For example: We can take the 2 last bits of the R & B channels only
-	"""
-	r_binary = '{0:08b}'.format(r)
-	g_binary = '{0:08b}'.format(g)
-	b_binary = '{0:08b}'.format(b)
-
-	a_binary = None
-	if a >= 0:
-		a_binary = '{0:08b}'.format(a)
-
-	if channel == "RGBA":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RGAB":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RAGB":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RABG":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RBGA":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RBAG":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "BGRA":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BGAR":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BAGR":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BARG":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "BRGA":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BRAG":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GRBA":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GRAB":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GARB":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GABR":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "GBRA":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GBAR":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AGBR":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AGRB":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ARGB":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ARBG":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "ABGR":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "ABRG":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RGB":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RBG":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GRB":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GBR":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BGR":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BRG":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "AGB":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ABG":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GAB":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GBA":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BGA":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BAG":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RAB":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "RBA":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "ARB":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "ABR":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BAR":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BRA":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RGA":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RAG":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "GRA":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GAR":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AGR":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "ARG":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RG":
-		return r_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "RA":
-		return r_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "RB":
-		return r_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GA":
-		return g_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "GB":
-		return g_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "GR":
-		return g_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "BA":
-		return b_binary[-bits_quantity:] + a_binary[-bits_quantity:]
-	elif channel == "BG":
-		return b_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "BR":
-		return b_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AR":
-		return a_binary[-bits_quantity:] + r_binary[-bits_quantity:]
-	elif channel == "AG":
-		return a_binary[-bits_quantity:] + g_binary[-bits_quantity:]
-	elif channel == "AB":
-		return a_binary[-bits_quantity:] + b_binary[-bits_quantity:]
-	elif channel == "R":
-		return r_binary[-bits_quantity:]
-	elif channel == "B":
-		return b_binary[-bits_quantity:]
-	elif channel == "G":
-		return g_binary[-bits_quantity:]
-	elif channel == "A":
-		return a_binary[-bits_quantity:]
-
-
-def binary_to_ascii(binary_string):
-	"""Basic function that takes a binary string in parameters. e.g: '00111010101010' and transform it to an ascii
-	string.
-	"""
-	binary_bytes = [binary_string[i:i + 8] for i in range(0, len(binary_string), 8)]
-
-	buff = ''
-	for character in binary_bytes:
-		buff += chr(int(character, 2))
-
-	return buff
+# from pit import Pit
 
 
 def is_prime(num):
@@ -387,7 +233,7 @@ class LStegB:
 		self.parser.add_argument("--all", "-a", action="store_true", help="All LSB techniques")
 		self.parser.add_argument("--basic", "-b", action="store_true", help="Basic LSB")
 		self.parser.add_argument("--pit", "-i", action="store_true", help="Pixel indicator technique")
-		self.args = parser.parse_args()
+		self.args = self.parser.parse_args()
 		self.rgba_combination = [
 			"RGBA", "RGAB", "RAGB", "RABG", "RBGA", "RBAG", "BGRA", "BGAR", "BAGR", "BARG", "BRGA", "BRAG", "GRBA",
 			"GRAB", "GARB", "GABR", "GBRA", "GBAR", "AGBR", "AGRB", "ARGB", "ARBG", "ABGR", "ABRG", "RGB", "RBG", "GRB",
@@ -398,8 +244,8 @@ class LStegB:
 		self.rgb_combination = ["RGB", "RBG", "GRB", "GBR", "BGR", "BRG", "RG", "RB", "GR", "GB", "BR", "BG", "R", "G", "B"]
 		self.la_combination = ["LA", "AL", "L", "A"]
 		self.l_combination = ["L"]
-		self.bits_quantity = range(1, 4) # Might be a problem for bit depth under 4
-		self.steps = range(1, 10)
+		self.bits_quantity = range(1, 2)
+		self.steps = range(1, 2)
 
 	def check_arguments(self):
 		""" Checking if the arguments are valid
@@ -426,7 +272,7 @@ class LStegB:
 		"""
 		mode = self.im.mode
 		if mode in ["L", "LA", "RGB", "RGBA"]:
-			print(f"{colored("[+]", "green")} PNG type '{mode}' detected")
+			print(f"{colored('[+]', 'green')} PNG type '{mode}' detected")
 			if mode == "L":
 				self.channels = self.l_combination
 			elif mode == "LA":
@@ -436,7 +282,7 @@ class LStegB:
 			elif mode == "RGBA":
 				self.channels = self.rgba_combination
 		else:
-			print(f"{colored("[-]", "red")} PNG type '{mode}' is not supported")
+			print(f"{colored('[-]', 'red')} PNG type '{mode}' is not supported")
 			exit()
 
 	def run(self):
@@ -452,38 +298,38 @@ class LStegB:
 		self.im = Image.open(self.args.file)
 
 		if self.file_type == "png":
-			find_png_type()
+			self.find_png_type()
 
 		print(colored("This program can take quite some time to complete.", "red", attrs=['bold']))
-		print(f"{colored("[+]", "green")} Starting LStegB program...")
+		print(f"{colored('[+]', 'green')} Starting LStegB program...")
 
 		if self.args.all:
-			print(f"{colored("[+]", "green")} Starting basic process...")
+			print(f"{colored('[+]', 'green')} Starting basic process...")
 			basic = Basic(self.im, self.bits_quantity, self.channels, self.steps)
 			basic.bruteforce()
-			print(f"{colored("[-]", "red")} Ending basic process...")
+			print(f"{colored('[-]', 'red')} Ending basic process...")
 			"""
-			print(f"{colored("[+]", "green")} Starting pit process...")
+			print(f"{colored('[+]', 'green')} Starting pit process...")
 			if im.mode == "RGBA":
 				print(colored("PIT does not support RGBA files", "red"))
 			else:
 				pit_bf(im, width, height, steps)
-			print(f"{colored("[-]", "red")} Ending pit process...")"""
+			print(f"{colored('[-]', 'red')} Ending pit process...")"""
 		else:
 			if self.args.basic:
-				print(f"{colored("[+]", "green")} Starting basic process...")
+				print(f"{colored('[+]', 'green')} Starting basic process...")
 				basic = Basic(self.im, self.bits_quantity, self.channels, self.steps)
-				asic.bruteforce()
-				print(f"{colored("[-]", "red")} Ending basic process...")
+				basic.bruteforce()
+				print(f"{colored('[-]', 'red')} Ending basic process...")
 			"""if self.args.pit:
-				print(f"{colored("[+]", "green")} Starting pit process...")
+				print(f"{colored('[+]', 'green')} Starting pit process...")
 				if im.mode == "RGBA":
 					print(colored("PIT does not support RGBA files", "red"))
 				else:
 					pit_bf(im, width, height, steps)
-				print(f"{colored("[-]", "red")} Ending pit process...")"""
+				print(f"{colored('[-]', 'red')} Ending pit process...")"""
 
-		print(f"{colored("[-]", "red")} Ending LStegB program...")
+		print(f"{colored('[-]', 'red')} Ending LStegB program...")
 
 
 def main():
