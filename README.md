@@ -2,13 +2,13 @@
 The first time I discovered about LSB steganography implemented in image I thought it was a really cool way to hide informations in image without it being noticeable.
 Then I documented myself to understand how it really works and how I could make my life easier when it come to this kind of challenge in CTF so I developped a brute-forcer !
 
-## Disclaimer
-This program can take quite some time to complete since it is written in Python which is a pretty slow language. However, keep in mind that you can of course check the output while the tool is running and when you have your result just terminate it.
-Another choice could be to just let it run and focus on other challenges !
+## Description
+This tool is made for people who wants to simplify their lives when encountering image steganography challenges during CTFs. It will always be under development (even if sometimes there's huge gaps).
 
-## Built with
-Nothing else but my own hands !
-I'm currently writing this program in Python 3 but one of my objective would be to translate this one in C to gain in performance.
+New image format might blow up, some might disappear. The goal is to cover as much formats as possible to be (almost) sure you're not missing something about least significant bit steganography. Of course, this tool is not perfect. Some simple encoding pattern can easily defeat it.
+
+Here's a trivial example :
+- Using only prime numbers to choose which bits to hide information (this is not and will not be implemented in the bruteforcer)
 
 ## Installation
 ```bash
@@ -42,11 +42,10 @@ Ways to contribute
 - Help me document the code
 - Spread the word
 
-## Versioning
-I'm using [SourceTree](https://www.sourcetreeapp.com) for versioning.
-
 ## Authors
-* **Laenen Maximilien** - *Developper of this tool*
+I am the only writter of this tool. If you want to know a bit more about me, do not hesite to check out my other projects or even my [website](https://www.maximilien-laenen.be).
+
+The list of people that contributed will be populated here as this project goes on.
 
 ## License
-This project is licensed under the **MIT license** - see more information [HERE](https://github.com/MaxBresil/LStegB/blob/master/LICENSE)
+This project is under the MIT License - see the LICENSE.md file for details

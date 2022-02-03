@@ -3,6 +3,7 @@
 try:
 	from PIL import Image
 	from progress.bar import IncrementalBar
+	import binascii
 except ModuleNotFoundError:
 	print("\033[1;31m" + "Please install the requirements")
 	exit()
@@ -30,6 +31,21 @@ class Basic:
 		if reversed_height:
 			range_height_pixel = reversed(range_height_pixel)
 
+		# If the image is an indexed-color image, we fetch the palette
+		if self.im.mode == "P":
+			# Getting the palette
+			datas = self.im.palette.getdata() # Experimental method in the doc
+			plte = binascii.hexlify(datas[1]).decode("utf-8") # This return a long HEX string
+
+			# Splitting the HEX string into group of 6 (RGB) (if RGBA then 8)
+			result = []
+			for i in range(0, len(plte), 6):
+				entry = plte[i:i+6]
+				# Converting each group into a triple
+				triple = (int(entry[0:2],16), int(entry[2:4],16), int(entry[4:6],16))
+				result.append(triple)
+			plte = result
+
 		f = open("basic.txt", "a", encoding="utf-8")
 
 		# Foreach height, we browse the whole width
@@ -49,6 +65,9 @@ class Basic:
 				elif self.im.mode == "RGBA":
 					r, g, b, a = pixels[width_pixel, height_pixel]
 					secret += rgba_to_binary(bit, channel, r, g, b, a)
+				elif self.im.mode == "P":
+					r, g, b = plte[pixels[width_pixel, height_pixel]]
+					secret += rgba_to_binary(bit, channel, r, g, b)
 
 		f.write(binary_to_ascii(secret))
 
@@ -69,6 +88,9 @@ class Basic:
 				elif self.im.mode == "RGBA":
 					r, g, b, a = pixels[width_pixel, height_pixel]
 					secret += rgba_to_binary(bit, channel, r, g, b, a)
+				elif self.im.mode == "P":
+					r, g, b = plte[pixels[width_pixel, height_pixel]]
+					secret += rgba_to_binary(bit, channel, r, g, b)
 
 		f.write(binary_to_ascii(secret))
 
