@@ -56,10 +56,11 @@ class LStegB:
 			- "LA" --> Grayscale with alpha
 			- "RGB" --> Truecolor
 			- "RGBA" --> Truecolor with alpha
-			- Other (like indexed-color are not supported right now)
+			- "P" --> Indexed-color (palette)
+			- Other are not supported right now
 		"""
 		mode = self.im.mode
-		if mode in ["L", "LA", "RGB", "RGBA"]:
+		if mode in ["L", "LA", "RGB", "RGBA", "P"]:
 			print(f"{colored('[+]', 'green')} PNG type '{mode}' detected")
 			if mode == "L":
 				self.channels = self.l_combination
@@ -69,6 +70,13 @@ class LStegB:
 				self.channels = self.rgb_combination
 			elif mode == "RGBA":
 				self.channels = self.rgba_combination
+			elif mode == "P":
+				plte_mode = self.im.palette.getdata()[0]
+				if plte_mode == "RGB":
+					self.channels = self.rgb_combination
+				else:
+					print(f"{colored('[-]', 'red')} PNG type '{mode}' with '{plte_mode}' is not supported")
+					exit()
 		else:
 			print(f"{colored('[-]', 'red')} PNG type '{mode}' is not supported")
 			exit()
