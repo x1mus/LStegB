@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 try:
-	import os, imghdr, argparse
+	import os, filetype, argparse
 	from termcolor import colored
 	from PIL import Image
 except ModuleNotFoundError:
@@ -38,7 +38,7 @@ class LStegB:
 	def check_arguments(self):
 		""" Checking if the arguments are valid
 		"""
-		self.file_type = imghdr.what(self.args.file)
+		self.file_type = filetype.guess(self.args.file).extension
 		try:
 			if self.file_type != "png":
 				self.parser.error("The file type specified is not supported")
