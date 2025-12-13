@@ -1,3 +1,4 @@
 pillow
 termcolor
 progress
+filetype
